@@ -19,6 +19,7 @@ def toy_data(start=100, rate=1.333333, length=20):
 def create_graph(df, xlab, threshold):
     df = df.drop(["Lat", "Long"], axis=1).groupby(by="Country/Region").sum()
     df = df.drop("Cruise Ship")
+    df = df.sort_values(df.columns[-1], ascending=False)
     series_dict = dict()
     for country, series in df.iterrows():
         data = np.array(series[series >= threshold].to_list())
@@ -27,14 +28,13 @@ def create_graph(df, xlab, threshold):
 
     fig, ax = plt.subplots(1, figsize=(16, 9))
     for country, series in series_dict.items():
-        ax.plot(series, label=country)
-    ax.plot(toy_data(start=threshold), "--", label="Sample exponential growth")
+        x = np.arange(0, series.size)
+        ax.plot(x, series, label=country)
+    ax.plot(toy_data(start=threshold), "r--", label="33% growth every day", lw=2)
 
-    used_spaces = []
     for line in ax.lines:
         x, y = line.get_xydata()[-1]
-        xy = np.array((x, y))
-        ax.text(x, y, line.get_label())
+        ax.text(x, y, line.get_label(), color=line.get_color())
 
     ax.set_xlim(0, ax.get_xlim()[1])
     ax.set_xlabel(f"Days after {threshold} {xlab}")
