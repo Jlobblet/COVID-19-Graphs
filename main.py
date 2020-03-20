@@ -4,6 +4,7 @@ import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.offsetbox import AnchoredText
 
 from CONFIG import CONFIG
 
@@ -36,6 +37,8 @@ def create_graph(df, xlab, threshold):
         x, y = line.get_xydata()[-1]
         ax.text(x, y, line.get_label(), color=line.get_color())
 
+    at = AnchoredText("Source: https://github.com/CSSEGISandData/COVID-19", prop=dict(size=8), loc=4)
+    ax.add_artist(at)
     ax.set_xlim(0, ax.get_xlim()[1])
     ax.set_xlabel(f"Days after {threshold} {xlab}")
     ax.set_ylabel(f"Number of {xlab}")
