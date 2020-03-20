@@ -1,0 +1,3 @@
+#!/bin/bash
+sudo rm /var/www/html/COVID-19/*
+sudo cp /opt/python/COVID-19-Graphs/out/* /var/www/html/COVID-19/
