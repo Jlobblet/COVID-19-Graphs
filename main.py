@@ -45,11 +45,12 @@ def plot_graph(series_dict, xlab, threshold):
 def create_series_dict(df, threshold):
     df = df.drop(["Lat", "Long"], axis=1).groupby(by="Country/Region").sum()
     df = df.sort_values(df.columns[-1], ascending=False)
+    df = df.drop("Diamond Princess")
     series_dict = dict()
     for country, series in df.iterrows():
         data = np.array(series[series >= threshold].to_list())
         if data.size >= 14:
-            series_dict[country] = data[0 : min(data.size - 1, 59)]
+            series_dict[country] = data[0 : min(data.size, 59)]
 
     return series_dict
 
