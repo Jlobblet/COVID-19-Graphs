@@ -44,7 +44,6 @@ def plot_graph(series_dict, xlab, threshold):
 
 def create_series_dict(df, threshold):
     df = df.drop(["Lat", "Long"], axis=1).groupby(by="Country/Region").sum()
-    df = df.drop("Cruise Ship")
     df = df.sort_values(df.columns[-1], ascending=False)
     series_dict = dict()
     for country, series in df.iterrows():
