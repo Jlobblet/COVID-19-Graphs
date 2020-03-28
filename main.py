@@ -10,6 +10,7 @@ from matplotlib.offsetbox import AnchoredText
 from CONFIG import CONFIG
 
 # plt.style.use("seaborn")
+cmap = plt.get_cmap("tab10")
 
 
 def toy_data(start=100, rate=1.333333, length=25):
@@ -20,13 +21,37 @@ def toy_data(start=100, rate=1.333333, length=25):
 
 def plot_graph(series_dict, xlab, threshold):
     fig, ax = plt.subplots(1, figsize=(16, 9))
+    j = 0
     for country, series in series_dict.items():
         x = np.arange(0, series.size)
-        ax.plot(x, series, label=country, marker="o", markevery=[-1])
+        for i in x:
+            if i != max(x):
+                ax.plot(
+                    x[i : i + 2],
+                    series[i : i + 2],
+                    alpha=0.1 + 0.9 * float(i) / (series.size),
+                    color=cmap(j),
+                    label=country,
+                )
+            else:
+                ax.plot(
+                    x[i : i + 2],
+                    series[i : i + 2],
+                    alpha=0.1 + 0.9 * float(i) / (series.size),
+                    color=cmap(j),
+                    label=country,
+                    marker="o",
+                    markevery=[-1],
+                )
+        ax.text(x[-1] + 0.5, series[-1], country, color=cmap(j))
+        j += 1
+        if j > cmap.N:
+            j = 0
+        # ax.plot(x, series, label=country, marker="o", markevery=[-1])
 
-    for line in ax.lines:
-        x, y = line.get_xydata()[-1]
-        ax.text(x + 0.5, y, line.get_label(), color=line.get_color())
+    # for line in ax.lines:
+    #     x, y = line.get_xydata()[-1]
+    #    ax.text(x + 0.5, y, line.get_label(), color=line.get_color())
 
     at = AnchoredText(
         f"Source: https://github.com/CSSEGISandData/COVID-19, {dt.datetime.today()}",
