@@ -109,6 +109,46 @@ def create_graph_animation(series_dict, xlab, threshold):
         fig = plot_series_dict(truncated_dict, xlab, threshold)
 
 
+def plot_cases_deaths_graph(confirmed_dict, deaths_dict):
+    fig, ax = plt.subplots(1, figsize=(16, 9))
+    countries = confirmed_dict.keys() & deaths_dict.keys()
+    j = 0
+    for country in countries:
+        cases = confirmed_dict[country]
+        deaths = deaths_dict[country]
+        min_len = min(len(deaths), len(cases))
+        for i in range(min_len - 1):
+            ax.plot(
+                deaths[i : i + 2],
+                cases[i : i + 2],
+                alpha=0.1 + 0.9 * float(i) / min_len,
+                color=cmap(j),
+                label=country,
+            )
+        ax.text(deaths[min_len - 1], cases[min_len - 1], country, color=cmap(j))
+        j += 1
+        if j > cmap.N:
+            j = 0
+    ex_ydata = toy_data(start=100,)
+    ex_xdata = ex_ydata * 0.05
+    example = ax.plot(ex_xdata, ex_ydata, "r--", label="5% death rate", lw=2)[0]
+    exx, exxy = example.get_xydata()[-1]
+    ax.text(exx, exxy, example.get_label(), color=example.get_color())
+
+    at = AnchoredText(
+        f"Source: https://github.com/CSSEGISandData/COVID-19, {dt.datetime.today()}",
+        prop=dict(size=8),
+        loc=4,
+    )
+    ax.add_artist(at)
+    ax.set_ylabel(f"Number of Confirmed Cases", fontsize=20)
+    ax.set_xlabel(f"Number of Deaths", fontsize=20)
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    plt.tight_layout()
+    fig.savefig(os.path.join(os.getcwd(), "out", "Cases-Deaths.png"))
+
+
 if __name__ == "__main__":
     # os.chdir(os.path.join(CONFIG["COVID-19_repo_location"]))
     # print(os.exec("git log -1 --format=%cd"))
@@ -140,40 +180,4 @@ if __name__ == "__main__":
     recoveries_df = pd.read_csv(recovered_location)
     recoveries_dict = create_single_graph(recoveries_df, "Recovered Cases", 50)
 
-    fig, ax = plt.subplots(1, figsize=(16, 9))
-    countries = confirmed_dict.keys() & deaths_dict.keys()
-    j = 0
-    for country in countries:
-        cases = confirmed_dict[country]
-        deaths = deaths_dict[country]
-        min_len = min(len(deaths), len(cases))
-        for i in range(min_len - 1):
-            ax.plot(deaths[i : i + 2],
-                    cases[i : i + 2],
-                    alpha=0.1 + 0.9 * float(i) / min_len,
-                    color=cmap(j),
-                    label=country)
-        ax.text(deaths[min_len-1], cases[min_len-1], country, color=cmap(j))
-        j += 1
-        if j > cmap.N:
-            j = 0
-    ex_ydata = toy_data(start=100)
-    ex_xdata = ex_ydata * 0.05
-    example = ax.plot(
-        ex_xdata, ex_ydata, "r--", label="5% death rate", lw=2
-    )[0]
-    exx, exxy = example.get_xydata()[-1]
-    ax.text(exx, exxy, example.get_label(), color=example.get_color())
-
-    at = AnchoredText(
-        f"Source: https://github.com/CSSEGISandData/COVID-19, {dt.datetime.today()}",
-        prop=dict(size=8),
-        loc=4,
-    )
-    ax.add_artist(at)
-    ax.set_ylabel(f"Number of Confirmed Cases", fontsize=20)
-    ax.set_xlabel(f"Number of Deaths", fontsize=20)
-    ax.set_xscale("log")
-    ax.set_yscale("log")
-    plt.tight_layout()
-    fig.savefig(os.path.join(os.getcwd(), "out", "Cases-Deaths.png"))
+    plot_cases_deaths_graph(confirmed_dict, deaths_dict)
