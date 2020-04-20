@@ -11,6 +11,8 @@ from CONFIG import CONFIG
 
 # plt.style.use("seaborn")
 cmap = plt.get_cmap("tab10")
+min_data_len = CONFIG["min_data_len"]
+max_data_len = CONFIG["max_data_len"]
 
 
 def toy_data(start=100, rate=1.333333, length=25):
@@ -74,8 +76,8 @@ def create_series_dict(df, threshold):
     series_dict = dict()
     for country, series in df.iterrows():
         data = np.array(series[series >= threshold].to_list())
-        if data.size >= 14:
-            series_dict[country] = data[0 : min(data.size, 59)]
+        if data.size >= min_data_len:
+            series_dict[country] = data[0 : min(data.size, max_data_len)]
 
     return series_dict
 
@@ -91,8 +93,10 @@ def plot_series_dict(series_dict, xlab, threshold):
 
 
 def create_single_graph(df, xlab, threshold):
-    fig = plot_series_dict(create_series_dict(df, threshold), xlab, threshold)
+    series_dict = create_series_dict(df, threshold)
+    fig = plot_series_dict(series_dict, xlab, threshold)
     fig.savefig(os.path.join(os.getcwd(), "out", f"{xlab}.png"))
+    return series_dict
 
 
 def create_graph_animation(series_dict, xlab, threshold):
@@ -128,10 +132,36 @@ if __name__ == "__main__":
     )
 
     confirmed_df = pd.read_csv(confirmed_location)
-    create_single_graph(confirmed_df, "Confirmed Cases", 100)
+    confirmed_dict = create_single_graph(confirmed_df, "Confirmed Cases", 100)
 
     deaths_df = pd.read_csv(deaths_location)
-    create_single_graph(deaths_df, "Deaths", 3)
+    deaths_dict = create_single_graph(deaths_df, "Deaths", 3)
 
     recoveries_df = pd.read_csv(recovered_location)
-    create_single_graph(confirmed_df, "Recovered Cases", 50)
+    recoveries_dict = create_single_graph(recoveries_df, "Recovered Cases", 50)
+
+    fig, ax = plt.subplots(1, figsize=(16, 9))
+    countries = confirmed_dict.keys() & deaths_dict.keys()
+    j = 0
+    for country in countries:
+        cases = confirmed_dict[country]
+        deaths = deaths_dict[country]
+        min_len = min(len(deaths), len(cases))
+        line = ax.plot(deaths[:min_len], cases[:min_len], label=country,
+                color=cmap(j))
+        ax.text(deaths[min_len-1], cases[min_len-1], country, color=cmap(j))
+        j += 1
+        if j > cmap.N:
+            j = 0
+    at = AnchoredText(
+        f"Source: https://github.com/CSSEGISandData/COVID-19, {dt.datetime.today()}",
+        prop=dict(size=8),
+        loc=4,
+    )
+    ax.add_artist(at)
+    ax.set_ylabel(f"Number of Confirmed Cases", fontsize=20)
+    ax.set_xlabel(f"Number of Deaths", fontsize=20)
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    plt.tight_layout()
+    fig.savefig(os.path.join(os.getcwd(), "out", "Cases-Deaths.png"))

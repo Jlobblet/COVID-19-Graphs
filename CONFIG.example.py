@@ -4,4 +4,6 @@ CONFIG = {
     "time_series_confirmed": "time_series_covid19_confirmed_global.csv",
     "time_series_deaths": "time_series_covid19_deaths_global.csv",
     "time_series_recovered": "time_series_covid19_recovered_global.csv",
+    "min_data_len": 25,
+    "max_data_len": 90,
 }
