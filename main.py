@@ -147,12 +147,24 @@ if __name__ == "__main__":
         cases = confirmed_dict[country]
         deaths = deaths_dict[country]
         min_len = min(len(deaths), len(cases))
-        line = ax.plot(deaths[:min_len], cases[:min_len], label=country,
-                color=cmap(j))
+        for i in range(min_len - 1):
+            ax.plot(deaths[i : i + 2],
+                    cases[i : i + 2],
+                    alpha=0.1 + 0.9 * float(i) / min_len,
+                    color=cmap(j),
+                    label=country)
         ax.text(deaths[min_len-1], cases[min_len-1], country, color=cmap(j))
         j += 1
         if j > cmap.N:
             j = 0
+    ex_ydata = toy_data(start=100)
+    ex_xdata = ex_ydata * 0.05
+    example = ax.plot(
+        ex_xdata, ex_ydata, "r--", label="5% death rate", lw=2
+    )[0]
+    exx, exxy = example.get_xydata()[-1]
+    ax.text(exx, exxy, example.get_label(), color=example.get_color())
+
     at = AnchoredText(
         f"Source: https://github.com/CSSEGISandData/COVID-19, {dt.datetime.today()}",
         prop=dict(size=8),
